@@ -9,18 +9,18 @@ const OrderButton = ({ vehicle, baseUrl }) => {
   const handleClick = () => {
     setIsLoading(true);
 
-    //1) Backend'te ödeme sayfasının linkini oluşturması için istek atacağız
+    // 1) Send a request to the backend to generate the payment page link
     fetch(`${baseUrl}/api/checkout`, {
       method: "POST",
       body: JSON.stringify(vehicle),
     })
-      //2) Backend buraya satın alım sayfasınını linki gönderecek
+      // 2) The backend will send the purchase page link here
       .then((res) => res.json())
-      //3) Kullanıcyı satın alım sayfasına yönlendir
+      // 3) Redirect the user to the purchase page
       .then((data) => {
         window.location.href = data.url;
       })
-      //4) Yüklenme statini false'a çek
+      // 4) Set the loading state back to false
       .finally(() => setIsLoading(false));
   };
 

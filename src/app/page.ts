@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Card from "./(components)/Card";
 import Link from "next/link";
 
-// Proje geliştirme sürecinde farklı portlarda veya yayınlandıktan sonra farklı host adresinde çalışabilceğinden istek atılan API adresini dinamik yaptık
+// Since the project may run on different ports during the development process or on different host addresses after release, we made the request API address dynamic.
 const host = headers().get("host");
 const protocol = headers().get("x-forwarded-proto");
 export const baseUrl = `${protocol}://${host}`;
@@ -26,7 +26,7 @@ export default async function Home() {
         <p className="header text-2xl font-bold">CAR BAZAAR</p>
       </div>
 
-      {/* Ürünler */}
+      {/* Vehicles */}
       <div className="container">
         {data?.data.map((vehicle) => (
           <Card vehicle={vehicle} key={vehicle._id} baseUrl={baseUrl} />

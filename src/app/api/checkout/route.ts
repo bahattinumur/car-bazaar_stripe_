@@ -2,27 +2,27 @@ import { NextResponse } from "next/server";
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 const getActiveProducts = async () => {
-  // Katalogdaki bütün ürünleri al
+  // Get all products in the catalog
   let stripeProducts = await stripe.products.list();
 
-  // Aktif ürünleri filtrele
+  // Filter active products
   return stripeProducts.data.filter((i) => i.active);
 };
 
 export const POST = async (req) => {
   try {
-    //1) İsteğin body kısmında gelen satın alınacak araç verisine eriş
+    // 1) Access the vehicle data to be purchased from the request body
     const product = await req.json();
 
-    //2) Stript'nın catalog'una kaydedilmiş ürünleri al
+    // 2) Retrieve products stored in Stripe's catalog
     const stripeProducts = await getActiveProducts();
 
-    //3) Satın alıncak ürün catalog'da var mı kontrol et
+    // 3) Check if the product to be purchased exists in the catalog
     let foundProduct = stripeProducts.find(
       (i) => i.metadata.product_id === product._id
     );
 
-    //4) Catolog'da yok ise satın alınacak ürünü catalog'a ekle
+    // 4) If it is not in the catalog, add the product to the catalog
     if (!foundProduct) {
       foundProduct = await stripe.products.create({
         name: product.make + " " + product.model,
@@ -37,13 +37,13 @@ export const POST = async (req) => {
       });
     }
 
-    //5) ürünün stripe tarafından oluşturulan ID'sini ve satım, alım miktarını bir nesneye koy
+    // 5) Store the Stripe-generated product ID and purchase quantity in an object
     const product_info = {
       price: foundProduct.default_price,
       quantity: 1,
     };
 
-    //6) Ödeme oturumu (URL) oluştur
+    // 6) Create a payment session (URL)
     const session = await stripe.checkout.sessions.create({
       line_items: [product_info],
       mode: "payment",
@@ -51,7 +51,7 @@ export const POST = async (req) => {
       cancel_url: "http://localhost:3000" + "/cancel",
     });
 
-    //7) Satın alma URL'ini client'a döndür
+    // 7) Return the purchase URL to the client
     return NextResponse.json({
       url: session.url,
     });

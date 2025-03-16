@@ -1,9 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 
-// Mongo.DB veritabanına bağlan
+// Connect to Mongo.DB 
 mongoose.connect(process.env.MONGO_URL);
 
-// Ödeme detayları
+// Payment Details
 mongoose.Promise = global.Promise;
 
 const OrderSchema = new Schema(

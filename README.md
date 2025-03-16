@@ -8,7 +8,7 @@ Car Bazaar is a web application developed using Next.js, with data stored in Mon
 
 - CSS
 
-- JavaScript
+- TypeScript
 
 <h2> Libraries </h2>
 

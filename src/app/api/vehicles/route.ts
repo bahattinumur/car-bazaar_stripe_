@@ -3,10 +3,10 @@ import Vehicle from "../(models)/Vehicle";
 
 export async function GET() {
   try {
-    // veritabnından bütün araçları al
+    // Get all the vehicles
     const vehicles = await Vehicle.find();
 
-    // clienta gönder
+    // Sent to the client
     return NextResponse.json({
       message: "Cars Founded",
       data: vehicles,

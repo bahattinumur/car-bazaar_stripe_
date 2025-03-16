@@ -4,24 +4,24 @@ import Order from "../(models)/Order";
 
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 
-// Next.JS'in body'sini işleme özelliğini kapat
+// Disable Next.js body processing
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// Eğer ödeme başarılı olursa stripe buraya post isteği atıcak bizde ödemenin başarılı olduğunu anlayıp gerekli güncellemeleri yapabileceğiz
+// If the payment is successful, Stripe will send a POST request here, allowing us to detect the successful payment and make necessary updates
 export async function POST(req) {
-  //1) İsteğin body kısmını text'e çevir
+  // 1) Convert the request body to text
   const body = await req.text();
 
-  //2) Gerekli header'a ulaş
+  // 2) Access the required header
   const signature = headers().get("stripe-signature");
 
   let event;
 
-  //3) Gerçekleşen ödeme ile alakalı verilere eriş
+  // 3) Access the data related to the completed payment
   try {
     event = stripe.webhooks.constructEvent(
       body,
@@ -32,20 +32,20 @@ export async function POST(req) {
     return NextResponse.json({ message: "Webhook Unsuccessful" }, { status: 500 });
   }
 
-  // 4) Ödeme başarılı olduysa satın alınan ürünün verilerine eriş
+  // 4) If the payment was successful, access the purchased product data
   if (event.type === "checkout.session.completed") {
-    // Ödeme verileri
+    // Payment data
     const session = event.data.object;
 
-    // Bu ödeme oturumunda satın alınan ürünlere eriş
+    // Access the products purchased in this payment session
     const line_items = await stripe.checkout.sessions.listLineItems(session.id);
 
-    // Ürünün catalog verisine eriş
+    // Retrieve the product's catalog data
     const item = await stripe.products.retrieve(
       line_items.data[0].price.product
     );
 
-    // Kendi veritabanımıza eklenilecek sipariş verisi oluştur
+    // Create order data to be added to our database
     const orderItem = {
       product: item.metadata.product_id,
       money_spend: line_items.data[0].amount_total,
@@ -53,10 +53,10 @@ export async function POST(req) {
       type: line_items.data[0].price.type,
     };
 
-    // Satın alınan ürünü siparişler kolleksiyonuna ekle
+    // Add the purchased product to the orders collection
     await Order.create(orderItem);
 
-    // Client'a olumlu cevap gönder
+    // Send a positive response to the client
     return NextResponse.json(
       {
         status: "success",
@@ -65,7 +65,7 @@ export async function POST(req) {
     );
   }
 
-  // Client'a olumsuz cevap gönder
+  // Send a negative response to the client
   return NextResponse.json(
     {
       status: "fail",
